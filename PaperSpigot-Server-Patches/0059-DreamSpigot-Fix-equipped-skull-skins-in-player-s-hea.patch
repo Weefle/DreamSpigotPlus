@@ -1,0 +1,39 @@
+From 2228ea0461cf443872ca380951fdfbea51a0460e Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:31:45 -0300
+Subject: [PATCH] [DreamSpigot] Fix equipped skull skins in player's heads
+
+
+diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+index 73d59e4..32817ea 100644
+--- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+@@ -205,6 +205,25 @@ public class PacketDataSerializer extends ByteBuf {
+             }
+             // Spigot end
+ 
++            // DreamSpigot start
++            try {
++            	/*
++            	 * Versão =- 1.7.5?
++            	 * NBTTagCompound é diferente de null?
++            	 * É uma cabeça de um player?
++            	 */
++            	if (4 >= version && nbttagcompound != null && Item.getId(itemstack.getItem()) == 397 && itemstack.getData() == 3) {
++            		NBTTagCompound skullCompound = nbttagcompound.getCompound("SkullOwner");
++            		
++            		String owner = skullCompound.getString("Name");
++            
++            		nbttagcompound.setString("SkullOwner", owner);
++            	}
++            } catch (Exception e) {
++            	e.printStackTrace();
++            }
++            // DreamSpigot end
++            
+             this.a(nbttagcompound);
+         }
+     }
+-- 
+2.7.2.windows.1
+
