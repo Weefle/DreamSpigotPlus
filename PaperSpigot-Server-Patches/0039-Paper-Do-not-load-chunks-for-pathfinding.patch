@@ -1,0 +1,102 @@
+From ab1d07e131c2dc93cdc09a741e22ac58d30d1353 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 08:59:20 -0300
+Subject: [PATCH] [Paper] Do not load chunks for pathfinding
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
+new file mode 100644
+index 0000000..af950d7
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/ChunkCache.java
+@@ -0,0 +1,87 @@
++package net.minecraft.server;
++
++public class ChunkCache implements IBlockAccess {
++
++    private int a;
++    private int b;
++    private Chunk[][] c;
++    private boolean d;
++    private World e;
++
++    public ChunkCache(World world, int i, int j, int k, int l, int i1, int j1, int k1) {
++        this.e = world;
++        this.a = i - k1 >> 4;
++        this.b = k - k1 >> 4;
++        int l1 = l + k1 >> 4;
++        int i2 = j1 + k1 >> 4;
++
++        this.c = new Chunk[l1 - this.a + 1][i2 - this.b + 1];
++        this.d = true;
++
++        int j2;
++        int k2;
++        Chunk chunk;
++
++        for (j2 = this.a; j2 <= l1; ++j2) {
++            for (k2 = this.b; k2 <= i2; ++k2) {
++                chunk = world.getChunkIfLoaded(j2, k2); // Paper
++                if (chunk != null) {
++                    this.c[j2 - this.a][k2 - this.b] = chunk;
++                }
++            }
++        }
++
++        for (j2 = i >> 4; j2 <= l >> 4; ++j2) {
++            for (k2 = k >> 4; k2 <= j1 >> 4; ++k2) {
++                chunk = this.c[j2 - this.a][k2 - this.b];
++                if (chunk != null && !chunk.c(j, i1)) {
++                    this.d = false;
++                }
++            }
++        }
++
++    }
++
++    public Block getType(int i, int j, int k) {
++        Block block = Blocks.AIR;
++
++        if (j >= 0 && j < 256) {
++            int l = (i >> 4) - this.a;
++            int i1 = (k >> 4) - this.b;
++
++            if (l >= 0 && l < this.c.length && i1 >= 0 && i1 < this.c[l].length) {
++                Chunk chunk = this.c[l][i1];
++
++                if (chunk != null) {
++                    block = chunk.getType(i & 15, j, k & 15);
++                }
++            }
++        }
++
++        return block;
++    }
++
++    public TileEntity getTileEntity(int i, int j, int k) {
++        int l = (i >> 4) - this.a;
++        int i1 = (k >> 4) - this.b;
++
++        return this.c[l][i1].e(i & 15, j, k & 15);
++    }
++
++    public int getData(int i, int j, int k) {
++        if (j < 0) {
++            return 0;
++        } else if (j >= 256) {
++            return 0;
++        } else {
++            int l = (i >> 4) - this.a;
++            int i1 = (k >> 4) - this.b;
++
++            return this.c[l][i1].getData(i & 15, j, k & 15);
++        }
++    }
++
++    public int getBlockPower(int i, int j, int k, int l) {
++        return this.getType(i, j, k).c(this, i, j, k, l);
++    }
++}
+-- 
+2.7.2.windows.1
+
