@@ -1,0 +1,41 @@
+From b3214b6c273c17ef1ab6946b138de12b995b6469 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 21:10:42 -0300
+Subject: [PATCH] [Paper] Disable chest cat detection
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockChest.java b/src/main/java/net/minecraft/server/BlockChest.java
+index b4afc50..e979134 100644
+--- a/src/main/java/net/minecraft/server/BlockChest.java
++++ b/src/main/java/net/minecraft/server/BlockChest.java
+@@ -363,6 +363,11 @@ public class BlockChest extends BlockContainer {
+     }
+ 
+     private static boolean o(World world, int i, int j, int k) {
++    	// Paper start - Option ti dsiable chest cat detection
++    	if (world.paperSpigotConfig.disableChestCatDetection) {
++    	    return false;
++    	}
++    	// Paper end
+         Iterator iterator = world.a(EntityOcelot.class, AxisAlignedBB.a((double) i, (double) (j + 1), (double) k, (double) (i + 1), (double) (j + 2), (double) (k + 1))).iterator();
+ 
+         EntityOcelot entityocelot;
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
+index 309a67e..9a9a199 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
+@@ -330,6 +330,11 @@ public class PaperSpigotWorldConfig
+         containerUpdateTickRate = getInt( "container-update-tick-rate", 1 );
+     }
+ 
++    public boolean disableChestCatDetection;
++    private void disableChestCatDetection() {
++        disableChestCatDetection = getBoolean("game-mechanics.disable-chest-cat-detection", false);
++    }
++    
+     public float tntExplosionVolume;
+     private void tntExplosionVolume()
+     {
+-- 
+2.7.2.windows.1
+
