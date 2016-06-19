@@ -1,0 +1,22 @@
+From 52e91de37925bfafafc961d7ae44ffefe42d59a4 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 07:32:30 -0300
+Subject: [PATCH] [Paper] Don't teleport dead entities
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 86c3f2b..82116c4 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -1851,7 +1851,7 @@ public abstract class Entity {
+     }
+ 
+     public void teleportTo(Location exit, boolean portal) {
+-        if (true) {
++    	if (!this.dead) { // Paper
+             WorldServer worldserver = ((CraftWorld) this.getBukkitEntity().getLocation().getWorld()).getHandle();
+             WorldServer worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
+             int i = worldserver1.dimension;
+-- 
+2.7.2.windows.1
+
