@@ -1,0 +1,23 @@
+From 9c79dcc7b2bd8a3fc82491d10b60c4a66345f246 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:12:47 -0300
+Subject: [PATCH] [Migot] Prevent Furnaces from Keeping Chunks Loaded
+
+
+diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+index bbd94df..b65d97b 100644
+--- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+@@ -245,7 +245,8 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
+             return false;
+         } else {
+             ItemStack itemstack = RecipesFurnace.getInstance().getResult(this.items[0]);
+-
++            if(!this.world.isLoaded(this.x, this.y, this.z) || ((WorldServer) this.world).chunkProviderServer.unloadQueue.contains(this.x >> 4, this.z >> 4)) { return false; } // Migot
++            
+             // CraftBukkit - consider resultant count instead of current count
+             return itemstack == null ? false : (this.items[2] == null ? true : (!this.items[2].doMaterialsMatch(itemstack) ? false : (this.items[2].count + itemstack.count <= this.getMaxStackSize() && this.items[2].count < this.items[2].getMaxStackSize() ? true : this.items[2].count + itemstack.count <= itemstack.getMaxStackSize())));
+         }
+-- 
+2.7.2.windows.1
+
