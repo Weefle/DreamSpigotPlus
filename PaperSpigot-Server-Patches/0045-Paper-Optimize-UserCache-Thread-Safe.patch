@@ -1,0 +1,96 @@
+From 7690b08c58beb5c7fc6b9b30f92f2ef01771e436 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 10:59:07 -0300
+Subject: [PATCH] [Paper] Optimize UserCache / Thread Safe
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index a71dc81..5f91553 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -419,7 +419,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
+             if( org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly )
+             {
+                 i.info("Saving usercache.json");
+-                this.X.c();
++                this.X.c(false); // Paper
+             }
+             //Spigot end
+         }
+diff --git a/src/main/java/net/minecraft/server/UserCache.java b/src/main/java/net/minecraft/server/UserCache.java
+index 1ce89c4..762f6c5 100644
+--- a/src/main/java/net/minecraft/server/UserCache.java
++++ b/src/main/java/net/minecraft/server/UserCache.java
+@@ -68,7 +68,7 @@ public class UserCache {
+         this.a(gameprofile, (Date) null);
+     }
+ 
+-    private void a(GameProfile gameprofile, Date date) {
++    private synchronized void a(GameProfile gameprofile, Date date) { // Paper - synchronize
+         UUID uuid = gameprofile.getId();
+ 
+         if (date == null) {
+@@ -84,9 +84,9 @@ public class UserCache {
+         LinkedList linkedlist = this.e;
+ 
+         synchronized (this.e) {
+-            if (this.d.containsKey(uuid)) {
++        	//if (this.e.containsKey(uuid)) { // Paper
+                 UserCacheEntry usercacheentry1 = (UserCacheEntry) this.d.get(uuid);
+-
++            if (usercacheentry1 != null) { // Paper
+                 this.c.remove(usercacheentry1.a().getName().toLowerCase(Locale.ROOT));
+                 this.c.put(gameprofile.getName().toLowerCase(Locale.ROOT), usercacheentry);
+                 this.e.remove(gameprofile);
+@@ -99,7 +99,7 @@ public class UserCache {
+         }
+     }
+ 
+-    public GameProfile getProfile(String s) {
++    public synchronized GameProfile getProfile(String s) { // Paper - synchronize
+         String s1 = s.toLowerCase(Locale.ROOT);
+         UserCacheEntry usercacheentry = (UserCacheEntry) this.c.get(s1);
+ 
+@@ -137,7 +137,7 @@ public class UserCache {
+         return usercacheentry == null ? null : usercacheentry.a();
+     }
+ 
+-    public String[] a() {
++    public synchronized String[] a() { // Paper - synchronize
+         ArrayList arraylist = Lists.newArrayList(this.c.keySet());
+ 
+         return (String[]) arraylist.toArray(new String[arraylist.size()]);
+@@ -210,8 +210,15 @@ public class UserCache {
+         }
+     }
+ 
++    // Paper start
+     public void c() {
++    	c(true);
++    }
++    public void c(boolean asyncSave) {
++    	// Paper end
+         String s = this.b.toJson(this.a(org.spigotmc.SpigotConfig.userCacheCap));
++        Runnable save = () -> {
++
+         BufferedWriter bufferedwriter = null;
+ 
+         try {
+@@ -225,6 +232,14 @@ public class UserCache {
+         } finally {
+             IOUtils.closeQuietly(bufferedwriter);
+         }
++        // Paper start
++        };
++        if (asyncSave) {
++            MCUtil.scheduleAsyncTask(save);
++        } else {
++            save.run();
++        }
++        // Paper end
+     }
+ 
+     private List a(int i) {
+-- 
+2.7.2.windows.1
+
