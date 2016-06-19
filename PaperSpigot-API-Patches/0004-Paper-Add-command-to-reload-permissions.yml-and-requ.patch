@@ -1,0 +1,102 @@
+From b7603afe51a7ec3b8aff005424f8a894794613f6 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 21:37:56 -0300
+Subject: [PATCH] [Paper] Add command to reload permissions.yml and require
+ confirm to reload
+
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 543004f..f780368 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -749,6 +749,13 @@ public final class Bukkit {
+ 		return server.getUnsafe();
+ 	}
+ 
++	/**
++	 * Reload the Permissions in permissions.yml
++	 */
++	public static void reloadPermissions() {
++	    server.reloadPermissions();
++	}
++	
+ 	public static Server.Spigot spigot()
+ 	{
+ 		return server.spigot();
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index be1abc6..ad7aaf2 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -962,4 +962,6 @@ public interface Server extends PluginMessageRecipient {
+     }
+ 
+     Spigot spigot();
++    
++    void reloadPermissions(); // Paper
+ }
+diff --git a/src/main/java/org/bukkit/command/defaults/ReloadCommand.java b/src/main/java/org/bukkit/command/defaults/ReloadCommand.java
+index a08ae80..a6c016a 100644
+--- a/src/main/java/org/bukkit/command/defaults/ReloadCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/ReloadCommand.java
+@@ -11,7 +11,7 @@ public class ReloadCommand extends BukkitCommand {
+     public ReloadCommand(String name) {
+         super(name);
+         this.description = "Reloads the server configuration and plugins";
+-        this.usageMessage = "/reload";
++        this.usageMessage = "/reload [permissions]"; // Paper
+         this.setPermission("bukkit.command.reload");
+         this.setAliases(Arrays.asList("rl"));
+     }
+@@ -20,6 +20,23 @@ public class ReloadCommand extends BukkitCommand {
+     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
+         if (!testPermission(sender)) return true;
+ 
++        // Paper start - Reload permissions.yml & require confirm
++        boolean confirmed = System.getProperty("LetMeReload") != null;
++        if (args.length == 1) {
++            if (args[0].equalsIgnoreCase("permissions")) {
++                Bukkit.getServer().reloadPermissions();
++                Command.broadcastCommandMessage(sender, ChatColor.GREEN + "Permissions successfully reloaded.");
++                return true;
++            } else if ("confirm".equalsIgnoreCase(args[0])) {
++                confirmed = true;
++            }
++        }
++        if (!confirmed) {
++            Command.broadcastCommandMessage(sender, ChatColor.RED + "Are you sure you wish to reload your server? Doing so may cause bugs and memory leaks. It is recommended to restart instead of using /reload. To confirm, please type " + ChatColor.YELLOW + "/reload confirm");
++            return true;
++        }
++        // Paper end
++        
+         Bukkit.reload();
+         Command.broadcastCommandMessage(sender, ChatColor.GREEN + "Reload complete.");
+ 
+@@ -30,7 +47,7 @@ public class ReloadCommand extends BukkitCommand {
+     @Override
+     public java.util.List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException
+     {
+-        return java.util.Collections.emptyList();
++    	return java.util.Collections.singletonList("permissions"); // Paper
+     }
+     // Spigot End
+ }
+diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+index 32879a5..32af200 100644
+--- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
++++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+@@ -735,4 +735,12 @@ public final class SimplePluginManager implements PluginManager {
+     public void useTimings(boolean use) {
+     	co.aikar.timings.Timings.setTimingsEnabled(use); // Spigot
+     }
++    
++    // Paper start
++    public void clearPermissions() {
++        permissions.clear();
++        defaultPerms.get(true).clear();
++        defaultPerms.get(false).clear();
++    }
++    // Paper end
+ }
+-- 
+2.7.2.windows.1
+
