@@ -1,0 +1,41 @@
+From a468481532e9b9b73b9d5c3dc5e61782dbf21378 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 20:48:02 -0300
+Subject: [PATCH] [Paper] Configurable Chunk IO Thread Base Count
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOExecutor.java b/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOExecutor.java
+index e4fd9bc..3e0a3a9 100644
+--- a/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOExecutor.java
++++ b/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOExecutor.java
+@@ -5,9 +5,10 @@ import net.minecraft.server.ChunkProviderServer;
+ import net.minecraft.server.ChunkRegionLoader;
+ import net.minecraft.server.World;
+ import org.bukkit.craftbukkit.util.AsynchronousExecutor;
++import org.github.paperspigot.PaperSpigotConfig;
+ 
+ public class ChunkIOExecutor {
+-    static final int BASE_THREADS = 1;
++	static final int BASE_THREADS = PaperSpigotConfig.minChunkLoadThreads; // Paper
+     static final int PLAYERS_PER_THREAD = 50;
+ 
+     private static final AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException> instance = new AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException>(new ChunkIOProvider(), BASE_THREADS);
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+index 2bb629d..6e389fb 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+@@ -210,6 +210,11 @@ public class PaperSpigotConfig
+         }
+     }
+ 
++    public static int minChunkLoadThreads = 2;
++    private static void chunkLoadThreads() {
++        minChunkLoadThreads = Math.min(6, getInt("settings.min-chunk-load-threads", 2)); // Keep people from doing stupid things with max of 6
++    }
++    
+     public static double strengthEffectModifier;
+     public static double weaknessEffectModifier;
+     private static void effectModifiers()
+-- 
+2.7.2.windows.1
+
