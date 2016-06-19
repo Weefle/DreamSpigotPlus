@@ -1,0 +1,67 @@
+From 27e8776c8a91eadd9bc27849aebba58e6bbaa309 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 07:47:08 -0300
+Subject: [PATCH] [Paper] Option to disable BlockPhysicsEvent for Redstone
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index d6c4a19..b821500 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -681,7 +681,7 @@ public abstract class World implements IBlockAccess {
+             try {
+                 // CraftBukkit start
+                 CraftWorld world = ((WorldServer) this).getWorld();
+-                if (world != null) {
++                if (world != null && !((WorldServer)this).stopPhysicsEvent) { // Paper
+                     BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(i, j, k), CraftMagicNumbers.getId(block));
+                     this.getServer().getPluginManager().callEvent(event);
+ 
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index bb0bb3c..66c0746 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -28,6 +28,7 @@ import org.bukkit.event.weather.WeatherChangeEvent;
+ public class WorldServer extends World {
+ 
+     private static final Logger a = LogManager.getLogger();
++    boolean stopPhysicsEvent = false; // Paper
+     private final MinecraftServer server;
+     public EntityTracker tracker; // CraftBukkit - private final -> public
+     private final PlayerChunkMap manager;
+@@ -589,6 +590,7 @@ public class WorldServer extends World {
+                     
+                     if (block.getMaterial() != Material.AIR && Block.a(block, nextticklistentry.a())) {
+                         try {
++                        	stopPhysicsEvent = !paperSpigotConfig.firePhysicsEventForRedstone && (block instanceof BlockDiodeAbstract || block instanceof BlockRedstoneTorch); // Paper
+                             block.a(this, nextticklistentry.a, nextticklistentry.b, nextticklistentry.c, this.random);
+                         } catch (Throwable throwable) {
+                             CrashReport crashreport = CrashReport.a(throwable, "Exception while ticking a block");
+@@ -604,7 +606,7 @@ public class WorldServer extends World {
+ 
+                             CrashReportSystemDetails.a(crashreportsystemdetails, nextticklistentry.a, nextticklistentry.b, nextticklistentry.c, block, k);
+                             throw new ReportedException(crashreport);
+-                        }
++                        } finally { stopPhysicsEvent = false; } // Paper
+                     }
+                     timing.stopTiming(); // Paper
+                 } else {
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
+index 085cb48..1ba66f7 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
+@@ -340,6 +340,11 @@ public class PaperSpigotWorldConfig
+         allChunksAreSlimeChunks = getBoolean("all-chunks-are-slime-chunks", false);
+     }
+     
++    public boolean firePhysicsEventForRedstone = false;
++    private void firePhysicsEventForRedstone() {
++        firePhysicsEventForRedstone = getBoolean("fire-physics-event-for-redstone", firePhysicsEventForRedstone);
++    }
++    
+     public float tntExplosionVolume;
+     private void tntExplosionVolume()
+     {
+-- 
+2.7.2.windows.1
+
