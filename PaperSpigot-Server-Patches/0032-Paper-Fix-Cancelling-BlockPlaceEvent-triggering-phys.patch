@@ -1,0 +1,21 @@
+From 986b0f2ad123cb86ad99ea65f47258e6740640c0 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 08:01:15 -0300
+Subject: [PATCH] [Paper] Fix Cancelling BlockPlaceEvent triggering physics
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 698644e..19d067b 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -639,6 +639,7 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public void applyPhysics(int i, int j, int k, Block block) {
++    	if (captureBlockStates) { return; } // Paper - Cancel all physics during placement
+         this.e(i - 1, j, k, block);
+         this.e(i + 1, j, k, block);
+         this.e(i, j - 1, k, block);
+-- 
+2.7.2.windows.1
+
