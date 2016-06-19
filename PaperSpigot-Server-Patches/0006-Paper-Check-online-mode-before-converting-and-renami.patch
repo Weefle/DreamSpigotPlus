@@ -1,0 +1,23 @@
+From 3d3f8789a85003b8a62cf6d5f110e2bbe09648a6 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 20:44:10 -0300
+Subject: [PATCH] [Paper] Check online mode before converting and renaming
+ player data
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+index 141248e..de2dcc9 100644
+--- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
++++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+@@ -198,7 +198,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+             File file1 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
+             // Spigot Start
+             boolean usingWrongFile = false;
+-            if ( !file1.exists() )
++            if ( org.bukkit.Bukkit.getOnlineMode() && !file1.exists() ) // Paper - Check online mode first
+             {
+                 file1 = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
+                 if ( file1.exists() )
+-- 
+2.7.2.windows.1
+
