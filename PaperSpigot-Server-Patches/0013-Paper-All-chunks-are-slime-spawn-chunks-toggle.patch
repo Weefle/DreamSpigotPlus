@@ -1,0 +1,39 @@
+From 776db8a1e88a355d9e7ba608bb6368956a46dfde Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 21:14:23 -0300
+Subject: [PATCH] [Paper] All chunks are slime spawn chunks toggle
+
+
+diff --git a/src/main/java/net/minecraft/server/EntitySlime.java b/src/main/java/net/minecraft/server/EntitySlime.java
+index 65cd24d..6e993d5 100644
+--- a/src/main/java/net/minecraft/server/EntitySlime.java
++++ b/src/main/java/net/minecraft/server/EntitySlime.java
+@@ -238,7 +238,8 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+                     return super.canSpawn();
+                 }
+ 
+-                if (this.random.nextInt(10) == 0 && chunk.a(987234911L).nextInt(10) == 0 && this.locY < 40.0D) {
++                boolean isSlimeChunk = world.paperSpigotConfig.allChunksAreSlimeChunks || chunk.a(987234911L).nextInt(10) == 0; // Paper
++                if (this.random.nextInt(10) == 0 && isSlimeChunk && this.locY < 40.0D) {
+                     return super.canSpawn();
+                 }
+             }
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
+index 9a9a199..085cb48 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
+@@ -335,6 +335,11 @@ public class PaperSpigotWorldConfig
+         disableChestCatDetection = getBoolean("game-mechanics.disable-chest-cat-detection", false);
+     }
+     
++    public boolean allChunksAreSlimeChunks;
++    private void allChunksAreSlimeChunks() {
++        allChunksAreSlimeChunks = getBoolean("all-chunks-are-slime-chunks", false);
++    }
++    
+     public float tntExplosionVolume;
+     private void tntExplosionVolume()
+     {
+-- 
+2.7.2.windows.1
+
