@@ -1,0 +1,22 @@
+From 267da1b40859cb2423465b7eac9f1223057d89a2 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 21:23:41 -0300
+Subject: [PATCH] [Paper] Ensure inv drag is in bounds
+
+
+diff --git a/src/main/java/net/minecraft/server/Container.java b/src/main/java/net/minecraft/server/Container.java
+index a10108b..b4e35b2 100644
+--- a/src/main/java/net/minecraft/server/Container.java
++++ b/src/main/java/net/minecraft/server/Container.java
+@@ -134,7 +134,7 @@ public abstract class Container {
+                     this.d();
+                 }
+             } else if (this.g == 1) {
+-                Slot slot = (Slot) this.c.get(i);
++            	Slot slot = i < this.c.size() ? (Slot) this.c.get(i) : null; // Paper - Ensure drag in bounds
+ 
+                 if (slot != null && a(slot, playerinventory.getCarried(), true) && slot.isAllowed(playerinventory.getCarried()) && playerinventory.getCarried().count > this.h.size() && this.b(slot)) {
+                     this.h.add(slot);
+-- 
+2.7.2.windows.1
+
