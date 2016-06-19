@@ -1,0 +1,71 @@
+From 4d438ffb079641b362c0602d1f286db19a81114e Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 07:36:59 -0300
+Subject: [PATCH] [Paper] Optimize Chunk Access
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index a43ae48..3de3633 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -26,6 +26,7 @@ public class Chunk {
+     public boolean d;
+     public World world;
+     public int[] heightMap;
++    public final long chunkKey; // Paper
+     public final int locX;
+     public final int locZ;
+     private boolean w;
+@@ -151,6 +152,7 @@ public class Chunk {
+         this.world = world;
+         this.locX = i;
+         this.locZ = j;
++        this.chunkKey = org.bukkit.craftbukkit.util.LongHash.toLong(this.locX, this.locZ); // Paper
+         this.heightMap = new int[256];
+ 
+         for (int k = 0; k < this.entitySlices.length; ++k) {
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 88962d2..9beec15 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -21,6 +21,8 @@ import org.bukkit.craftbukkit.util.LongHash;
+ import org.bukkit.craftbukkit.util.LongHashSet;
+ import org.bukkit.craftbukkit.util.LongObjectHashMap;
+ import org.bukkit.event.world.ChunkUnloadEvent;
++
++import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+ // CraftBukkit end
+ 
+ public class ChunkProviderServer implements IChunkProvider {
+@@ -32,7 +34,27 @@ public class ChunkProviderServer implements IChunkProvider {
+     public IChunkProvider chunkProvider;
+     private IChunkLoader f;
+     public boolean forceChunkLoad = false; // true -> false
+-    public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>();
++    // Paper start
++    protected Chunk lastChunkByPos = null;
++    public Long2ObjectOpenHashMap<Chunk> chunks = new Long2ObjectOpenHashMap<Chunk>(8192) {
++    
++        @Override
++        public Chunk get(long key) {
++            if (lastChunkByPos != null && key == lastChunkByPos.chunkKey) {
++                return lastChunkByPos;
++            }
++            return lastChunkByPos = super.get(key);
++        }
++    
++        @Override
++        public Chunk remove(long key) {
++            if (lastChunkByPos != null && key == lastChunkByPos.chunkKey) {
++                lastChunkByPos = null;
++            }
++            return super.remove(key);
++        }
++    }; // CraftBukkit
++    // Paper end
+     public WorldServer world;
+     // CraftBukkit end
+ 
+-- 
+2.7.2.windows.1
+
