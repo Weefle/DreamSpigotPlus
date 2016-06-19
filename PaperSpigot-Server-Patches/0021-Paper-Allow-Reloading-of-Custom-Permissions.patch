@@ -1,0 +1,44 @@
+From c2432b590f2411432b168bf3ccb1cc6274e0e8fb Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 21:37:30 -0300
+Subject: [PATCH] [Paper] Allow Reloading of Custom Permissions
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index b98d8d0..53307ca 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -386,7 +386,7 @@ public final class CraftServer implements Server {
+         if (type == PluginLoadOrder.STARTUP) {
+             helpMap.clear();
+             helpMap.initializeGeneralTopics();
+-            if (com.destroystokyo.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions(); // Paper
++            if (org.github.paperspigot.PaperSpigotConfig.loadPermsBeforePlugins) loadCustomPermissions(); // Paper
+         }
+ 
+         Plugin[] plugins = pluginManager.getPlugins();
+@@ -1928,4 +1928,21 @@ public final class CraftServer implements Server {
+     {
+         return spigot;
+     }
++    
++    // Paper start
++    @Override
++    public void reloadPermissions() {
++        ((SimplePluginManager) pluginManager).clearPermissions();
++        loadCustomPermissions();
++        for (Plugin plugin : pluginManager.getPlugins()) {
++            plugin.getDescription().getPermissions().forEach((perm) -> {
++                try {
++                    pluginManager.addPermission(perm);
++                } catch (IllegalArgumentException ex) {
++                    getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered", ex);
++                }
++            });
++        }
++    }
++    // Paper end
+ }
+-- 
+2.7.2.windows.1
+
