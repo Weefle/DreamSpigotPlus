@@ -1,0 +1,41 @@
+From 5137aa3dc5a5a517f11e38f165c81415f0d3351f Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:14:58 -0300
+Subject: [PATCH] [Migot] Check for lava only once per tick
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 82116c4..dbf138c 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -136,6 +136,11 @@ public abstract class Entity {
+     public void inactiveTick() { }
+     // Spigot end
+ 
++    // Migot start
++    private boolean isInLava;
++    private int lastLavaCheck = Integer.MIN_VALUE;
++    // Migot end
++    
+     public int getId() {
+         return this.id;
+     }
+@@ -922,7 +927,14 @@ public abstract class Entity {
+     }
+ 
+     public boolean P() {
+-        return this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
++    	// Migot start
++    	int currentTick = MinecraftServer.currentTick;
++    	if (this.lastLavaCheck != currentTick) {
++    	    this.lastLavaCheck = currentTick;
++    	    this.isInLava = this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
++    	}
++    	return this.isInLava;
++    	// Migot end
+     }
+ 
+     public void a(float f, float f1, float f2) {
+-- 
+2.7.2.windows.1
+
