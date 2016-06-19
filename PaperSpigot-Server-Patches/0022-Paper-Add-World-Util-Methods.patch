@@ -1,0 +1,60 @@
+From d4cada33ada7c9364cfc464f3462346a6b371fe0 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 21:59:40 -0300
+Subject: [PATCH] [Paper] Add World Util Methods
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 77b5b84..d6c4a19 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -734,6 +734,46 @@ public abstract class World implements IBlockAccess {
+         }
+     }
+ 
++    // Paper start - test if meets light level, return faster
++    // logic copied from below
++    public boolean isLightLevel(int i, int j, int k, int level) {
++        if (i >= -30000000 && k >= -30000000 && i < 30000000 && k < 30000000) {
++            if (this.getType(i, j, k).n()) {
++                if (this.b(i, j + 1, k, false) >= level) {
++                    return true;
++                }
++                if (this.b(i + 1, j, k, false) >= level) {
++                    return true;
++                }
++                if (this.b(i - 1, j, k, false) >= level) {
++                    return true;
++                }
++                if (this.b(i, j, k + 1, false) >= level) {
++                    return true;
++                }
++                if (this.b(i, j, k - 1, false) >= level) {
++                    return true;
++                }
++                return false;
++            } else if (j < 0) {
++                return false;
++            } else {
++                if (j >= 256) {
++                    j = 255;
++                }
++
++                Chunk chunk = this.getChunkAt(i >> 4, k >> 4);
++
++                i &= 15;
++                k &= 15;
++                return chunk.b(i, j, k, this.j) >= level;
++            }
++        } else {
++            return true;
++        }
++    }
++    // Paper end
++    
+     public int getLightLevel(int i, int j, int k) {
+         return this.b(i, j, k, true);
+     }
+-- 
+2.7.2.windows.1
+
