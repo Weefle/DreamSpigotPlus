@@ -1,0 +1,60 @@
+From b5128adb8a79e783f2363bddefc1f659b8ae3302 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 08:47:10 -0300
+Subject: [PATCH] [Paper] Improve Minecraft Hopper Performance
+
+
+diff --git a/src/main/java/net/minecraft/server/TileEntity.java b/src/main/java/net/minecraft/server/TileEntity.java
+index 8915c9c..64a7e34 100644
+--- a/src/main/java/net/minecraft/server/TileEntity.java
++++ b/src/main/java/net/minecraft/server/TileEntity.java
+@@ -76,6 +76,7 @@ public class TileEntity {
+         }
+     }
+ 
++    static boolean IGNORE_TILE_UPDATES = false; // Paper
+     public World getWorld() {
+         return this.world;
+     }
+@@ -141,6 +142,7 @@ public class TileEntity {
+ 
+     public void update() {
+         if (this.world != null) {
++        	if (IGNORE_TILE_UPDATES) return; // Paper
+             this.g = this.world.getData(this.x, this.y, this.z);
+             this.world.b(this.x, this.y, this.z, this);
+             if (this.q() != Blocks.AIR) {
+diff --git a/src/main/java/net/minecraft/server/TileEntityHopper.java b/src/main/java/net/minecraft/server/TileEntityHopper.java
+index 65ee96c..8bd819e 100644
+--- a/src/main/java/net/minecraft/server/TileEntityHopper.java
++++ b/src/main/java/net/minecraft/server/TileEntityHopper.java
+@@ -559,7 +559,9 @@ public class TileEntityHopper extends TileEntity implements IHopper {
+             boolean flag = false;
+ 
+             if (itemstack1 == null) {
++            	IGNORE_TILE_UPDATES = true; // Paper
+                 iinventory.setItem(i, itemstack);
++                IGNORE_TILE_UPDATES = false; // Paper
+                 itemstack = null;
+                 flag = true;
+             } else if (canMergeItems(itemstack1, itemstack)) {
+@@ -577,7 +579,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
+                     iinventory.update();
+                 }
+ 
+-                iinventory.update();
++                // iinventory.update(); // Paper
+             }
+         }
+ 
+@@ -664,6 +666,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
+         // Spigot end
+     }
+ 
++    boolean isCooledDown() { return j(); } // Paper // OBFHELPER
+     public boolean j() {
+         // Spigot start - Return whether this hopper is cooling down.
+         if (this.world != null && this.world.spigotConfig.altHopperTicking) {
+-- 
+2.7.2.windows.1
+
