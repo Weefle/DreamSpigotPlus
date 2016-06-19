@@ -1,0 +1,33 @@
+From 08f6681bbdf9add30799dab806b8b50a2094db95 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 07:59:37 -0300
+Subject: [PATCH] [Paper] Do not load chunks for light checks
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index b821500..698644e 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -761,7 +761,8 @@ public abstract class World implements IBlockAccess {
+                 if (j >= 256) {
+                     j = 255;
+                 }
+-
++                if (!this.isLoaded(i, j, k)) return false; // Paper
++                
+                 Chunk chunk = this.getChunkAt(i >> 4, k >> 4);
+ 
+                 i &= 15;
+@@ -810,7 +811,8 @@ public abstract class World implements IBlockAccess {
+                 if (j >= 256) {
+                     j = 255;
+                 }
+-
++                if (!this.isLoaded(i, j, k)) return 0; // Paper
++                
+                 Chunk chunk = this.getChunkAt(i >> 4, k >> 4);
+ 
+                 i &= 15;
+-- 
+2.7.2.windows.1
+
