@@ -1,0 +1,71 @@
+From 4a905e9812ddbeaf1ca10831422830f091ee4774 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 19:54:19 -0300
+Subject: [PATCH] [DreamSpigotPlus] Show 'DreamSpigotPlus' in client crashes,
+ server lists, server startup and Mojang stats
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 293ec98..a71dc81 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1047,7 +1047,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
+     }
+ 
+     public String getServerModName() {
+-        return "PaperSpigot"; // PaperSpigot - PaperSpigot > // Spigot - Spigot > // CraftBukkit - cb > vanilla!
++        return "DreamSpigotPlus"; // DreamSpigotPlus - DreamSpigotPlus > // PaperSpigot - PaperSpigot > // Spigot - Spigot > // CraftBukkit - cb > vanilla!
+     }
+ 
+     public CrashReport b(CrashReport crashreport) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 569d8d7..83274eb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -197,7 +197,7 @@ import jline.console.ConsoleReader;
+ 
+ public final class CraftServer implements Server {
+     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
+-    private final String serverName = "CraftBukkit";
++    private final String serverName = "DreamSpigotPlus";
+     private final String serverVersion;
+     private final String bukkitVersion = Versioning.getBukkitVersion();
+     private final Logger logger = Logger.getLogger("Minecraft");
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index f7676fd..d4c4691 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -153,7 +153,7 @@ public class Main {
+                 } catch (InterruptedException ex) {
+                 }
+             }
+-            System.err.println( "This PaperSpigot build only supports Minecraft 1.7.x and 1.8.x clients!\n"
++            System.err.println( "This DreamSpigotPlus build only supports Minecraft 1.7.x and 1.8.x clients!\n"
+                     + "*** It is imperative that backups be taken before running this build on your server! ***\n"
+                     + "Please report issues directly to Paper, and always ensure you're up-to-date!\n"
+                     + "*** Any bug reports not running the very latest version of the software will be ignored ***\n\n" );
+diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
+index 94a3d42..651ea56 100644
+--- a/src/main/java/org/spigotmc/WatchdogThread.java
++++ b/src/main/java/org/spigotmc/WatchdogThread.java
+@@ -19,7 +19,7 @@ public class WatchdogThread extends Thread
+ 
+     private WatchdogThread(long timeoutTime, boolean restart)
+     {
+-        super( "Spigot Watchdog Thread" );
++        super( "DreamSpigotPlus Watchdog Thread" );
+         this.timeoutTime = timeoutTime;
+         this.restart = restart;
+     }
+@@ -58,7 +58,7 @@ public class WatchdogThread extends Thread
+                 log.log( Level.SEVERE, "The server has stopped responding!" );
+                 log.log( Level.SEVERE, "Please report this to http://www.spigotmc.org/" );
+                 log.log( Level.SEVERE, "Be sure to include ALL relevant console errors and Minecraft crash reports" );
+-                log.log( Level.SEVERE, "Spigot version: " + Bukkit.getServer().getVersion() );
++                log.log( Level.SEVERE, "DreamSpigotPlus version: " + Bukkit.getServer().getVersion() );
+                 //
+                 if(net.minecraft.server.World.haveWeSilencedAPhysicsCrash)
+                 {
+-- 
+2.7.2.windows.1
+
