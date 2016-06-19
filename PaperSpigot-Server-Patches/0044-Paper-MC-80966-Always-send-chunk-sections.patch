@@ -1,0 +1,24 @@
+From 76dab5d04e3bc9368655c4841190a9ca2f1f2616 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 10:33:55 -0300
+Subject: [PATCH] [Paper] MC-80966 - Always send chunk sections
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkSection.java b/src/main/java/net/minecraft/server/ChunkSection.java
+index 1803920..b2693ba 100644
+--- a/src/main/java/net/minecraft/server/ChunkSection.java
++++ b/src/main/java/net/minecraft/server/ChunkSection.java
+@@ -167,7 +167,9 @@ public class ChunkSection {
+     }
+ 
+     public boolean isEmpty() {
+-        return this.nonEmptyBlockCount == 0;
++    	// Paper - MC-80966
++    	// Even if there are no blocks, there may be other information associated with the chunk, always send it.
++    	return false;
+     }
+ 
+     public boolean shouldTick() {
+-- 
+2.7.2.windows.1
+
