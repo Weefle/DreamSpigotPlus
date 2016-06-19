@@ -1,0 +1,63 @@
+From 176583e392637da91bd5cf67a71cbe56d162f47f Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:10:24 -0300
+Subject: [PATCH] [Spigot] Use FastMatches for ItemStack Dirty Check
+
+
+diff --git a/src/main/java/net/minecraft/server/Container.java b/src/main/java/net/minecraft/server/Container.java
+index b4e35b2..0a01e4c 100644
+--- a/src/main/java/net/minecraft/server/Container.java
++++ b/src/main/java/net/minecraft/server/Container.java
+@@ -27,7 +27,8 @@ public abstract class Container {
+     private final Set h = new HashSet();
+     protected List listeners = new ArrayList();
+     private Set i = new HashSet();
+-
++    private int tickCount; // Spigot
++    
+     // CraftBukkit start
+     public boolean checkReachable = true;
+     public abstract InventoryView getBukkitView();
+@@ -74,7 +75,7 @@ public abstract class Container {
+             ItemStack itemstack = ((Slot) this.c.get(i)).getItem();
+             ItemStack itemstack1 = (ItemStack) this.b.get(i);
+ 
+-            if (!ItemStack.matches(itemstack1, itemstack)) {
++            if (!ItemStack.fastMatches(itemstack1, itemstack) || (tickCount % 20 == 0 && !ItemStack.matches(itemstack1, itemstack))) { // Spigot
+                 itemstack1 = itemstack == null ? null : itemstack.cloneItemStack();
+                 this.b.set(i, itemstack1);
+ 
+@@ -83,6 +84,7 @@ public abstract class Container {
+                 }
+             }
+         }
++        tickCount++; // Spigot
+     }
+ 
+     public boolean a(EntityHuman entityhuman, int i) {
+diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
+index 47b16b1..b1b8500 100644
+--- a/src/main/java/net/minecraft/server/ItemStack.java
++++ b/src/main/java/net/minecraft/server/ItemStack.java
+@@ -446,6 +446,18 @@ public final class ItemStack {
+         return itemstack == null && itemstack1 == null ? true : (itemstack != null && itemstack1 != null ? (itemstack.tag == null && itemstack1.tag != null ? false : itemstack.tag == null || itemstack.tag.equals(itemstack1.tag)) : false);
+     }
+ 
++    // Spigot Start
++    public static boolean fastMatches(ItemStack itemstack, ItemStack itemstack1) {
++        if (itemstack == null && itemstack1 == null) {
++            return true;
++        }
++        if (itemstack != null && itemstack1 != null) {
++            return itemstack.count == itemstack1.count && itemstack.item == itemstack1.item && itemstack.damage == itemstack1.damage;
++        }
++        return false;
++    }
++    // Spigot End
++
+     public static boolean matches(ItemStack itemstack, ItemStack itemstack1) {
+         return itemstack == null && itemstack1 == null ? true : (itemstack != null && itemstack1 != null ? itemstack.d(itemstack1) : false);
+     }
+-- 
+2.7.2.windows.1
+
