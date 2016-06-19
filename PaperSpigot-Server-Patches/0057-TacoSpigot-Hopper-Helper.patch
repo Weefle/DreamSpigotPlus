@@ -1,0 +1,48 @@
+From c8fe5f4969167541e5779722ceab744629ad6201 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:24:09 -0300
+Subject: [PATCH] [TacoSpigot] Hopper Helper
+
+
+diff --git a/src/main/java/net/techcable/tacospigot/HopperHelper.java b/src/main/java/net/techcable/tacospigot/HopperHelper.java
+new file mode 100644
+index 0000000..c283953
+--- /dev/null
++++ b/src/main/java/net/techcable/tacospigot/HopperHelper.java
+@@ -0,0 +1,32 @@
++package net.techcable.tacospigot;
++
++import net.minecraft.server.Block;
++import net.minecraft.server.BlockChest;
++import net.minecraft.server.IInventory;
++import net.minecraft.server.TileEntity;
++import net.minecraft.server.TileEntityHopper;
++import net.minecraft.server.World;
++
++public class HopperHelper {
++
++    public static TileEntityHopper getHopper(World world, int x, int y, int z) {
++        TileEntity tileEntity = world.getTileEntity(x, y, z);
++        if (tileEntity instanceof TileEntityHopper) {
++            return (TileEntityHopper) tileEntity;
++        }
++        return null;
++    }
++
++    public static IInventory getInventory(World world, int x, int y, int z) {
++        Block block = world.getType(x, y, z);
++        if (block instanceof BlockChest) {
++            return ((BlockChest) block).m(world, x, y, z);
++        }
++        if (block.isTileEntity()) {
++            TileEntity tile = world.getTileEntity(x, y, z);
++            if (tile instanceof IInventory) return (IInventory) tile;
++        }
++        return null;
++    }
++
++}
+\ No newline at end of file
+-- 
+2.7.2.windows.1
+
