@@ -1,0 +1,21 @@
+From 260240f269c87773cc281533920f55fb25ec70be Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:11:27 -0300
+Subject: [PATCH] [Spigot] Don't tick blocks if neighbor chunks aren't loaded
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 66c0746..ba6cd99 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -347,6 +347,7 @@ public class WorldServer extends World {
+             this.a(k, l, chunk);
+             this.methodProfiler.c("tickChunk");
+             chunk.b(false);
++            if ( !chunk.areNeighborsLoaded( 1 ) ) continue; // Spigot
+             this.methodProfiler.c("thunder");
+             int i1;
+             int j1;
+-- 
+2.7.2.windows.1
+
