@@ -1,0 +1,55 @@
+From 283e39d331b3d6d8d0c4c390a40a6600bba2042f Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 08:15:41 -0300
+Subject: [PATCH] [Paper] Fix Bugs with Spigot Mob Spawn Logic
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 3de3633..3ee64cb 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -758,7 +758,7 @@ public class Chunk {
+             i = this.entitySlices.length - 1;
+         }
+ 
+-        this.entitySlices[i].remove(entity);
++        if (!this.entitySlices[i].remove(entity)) { return; } // Paper
+         // Paper start - update counts
+         if (entity instanceof EntityItem) {
+             itemCounts[i]--;
+diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
+index fad950e..440557d 100644
+--- a/src/main/java/net/minecraft/server/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
+@@ -30,6 +30,15 @@ public final class SpawnerCreature {
+     // Spigot start - get entity count only from chunks being processed in b
+     private int getEntityCount(WorldServer server, Class oClass)
+     {
++    	 // Paper start - use entire world, not just active chunks. Spigot broke vanilla expectations.
++    	 if (true) {
++    	     return server
++    	             .chunkProviderServer
++    	             .chunks.values()
++    	             .stream()
++    	             .collect(java.util.stream.Collectors.summingInt(c -> c.entityCount.get(oClass)));
++    	 }
++    	 // Paper end
+         int i = 0;
+         for ( Long coord : this.a.keySet() )
+         {
+@@ -124,10 +133,10 @@ public final class SpawnerCreature {
+                 int mobcnt = 0;
+                 // CraftBukkit end
+ 
+-                if ((!enumcreaturetype.d() || flag1) && (enumcreaturetype.d() || flag) && (!enumcreaturetype.e() || flag2) && (mobcnt = getEntityCount(worldserver, enumcreaturetype.a())) <= limit * this.a.size() / 256) { // Spigot - use per-world limits and use all loaded chunks
++                if ((!enumcreaturetype.d() || flag1) && (enumcreaturetype.d() || flag) && (!enumcreaturetype.e() || flag2) && (mobcnt = getEntityCount(worldserver, enumcreaturetype.a())) <= limit * this.a.size() / 289) { // Paper - use 17x17 like vanilla (a at top of file) // Spigot - use per-world limits and use all loaded chunks
+                     Iterator iterator = this.a.keySet().iterator();
+ 
+-                    int moblimit = (limit * this.a.size() / 256) - mobcnt + 1; // Spigot - up to 1 more than limit
++                    int moblimit = (limit * this.a.size() / 289) - mobcnt + 1; // Paper - use 17x17 like vanilla (a at top of file) // Spigot - up to 1 more than limit
+                     label110:
+                     while (iterator.hasNext() && (moblimit > 0)) { // Spigot - while more allowed
+                         // CraftBukkit start = use LongHash and LongObjectHashMap
+-- 
+2.7.2.windows.1
+
