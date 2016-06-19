@@ -1,0 +1,28 @@
+From aeab8459b56292e6b7dbde604a08da80dcb69183 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 10:32:37 -0300
+Subject: [PATCH] [Paper] Add server-name parameter
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index d4c4691..aebd8a9 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -116,6 +116,14 @@ public class Main {
+                 acceptsAll(asList("v", "version"), "Show the CraftBukkit Version");
+ 
+                 acceptsAll(asList("demo"), "Demo mode");
++                
++                // Paper start
++                acceptsAll(asList("server-name"), "Name of the server")
++                        .withRequiredArg()
++                        .ofType(String.class)
++                        .defaultsTo("Unknown Server")
++                        .describedAs("Name");
++                // Paper end
+             }
+         };
+ 
+-- 
+2.7.2.windows.1
+
