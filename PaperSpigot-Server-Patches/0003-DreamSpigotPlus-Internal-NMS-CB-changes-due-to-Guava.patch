@@ -1,0 +1,121 @@
+From 4d67b35d6d9523907ad8c9d9a18dedda235eee32 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 17:44:40 -0300
+Subject: [PATCH] [DreamSpigotPlus] Internal NMS/CB changes due to Guava
+ version bump
+
+
+diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
+index ee82aba..47b16b1 100644
+--- a/src/main/java/net/minecraft/server/ItemStack.java
++++ b/src/main/java/net/minecraft/server/ItemStack.java
+@@ -251,7 +251,7 @@ public final class ItemStack {
+                 public void run()
+                 {
+ 
+-                    final net.minecraft.util.com.mojang.authlib.GameProfile profile = TileEntitySkull.skinCache.getUnchecked( finalOwner.toLowerCase() );
++                    final net.minecraft.util.com.mojang.authlib.GameProfile profile = TileEntitySkull.skinCache.getIfPresent( finalOwner.toLowerCase() );
+                     if ( profile != null )
+                     {
+                         MinecraftServer.getServer().processQueue.add( new Runnable()
+diff --git a/src/main/java/net/minecraft/server/TileEntitySkull.java b/src/main/java/net/minecraft/server/TileEntitySkull.java
+index 1796a56..7ed6500 100644
+--- a/src/main/java/net/minecraft/server/TileEntitySkull.java
++++ b/src/main/java/net/minecraft/server/TileEntitySkull.java
+@@ -6,10 +6,10 @@ import net.minecraft.util.com.google.common.collect.Iterables;
+ import net.minecraft.util.com.mojang.authlib.GameProfile;
+ import net.minecraft.util.com.mojang.authlib.properties.Property;
+ 
++import com.github.benmanes.caffeine.cache.Cache;
++import com.github.benmanes.caffeine.cache.CacheLoader;
++import com.github.benmanes.caffeine.cache.Caffeine;
+ // Spigot start
+-import com.google.common.cache.Cache;
+-import com.google.common.cache.CacheBuilder;
+-import com.google.common.cache.CacheLoader;
+ import java.util.concurrent.Executor;
+ import java.util.concurrent.Executors;
+ import java.util.concurrent.TimeUnit;
+@@ -29,7 +29,7 @@ public class TileEntitySkull extends TileEntity {
+                     .setNameFormat("Head Conversion Thread - %1$d")
+                     .build()
+     );
+-    public static final Cache<String, GameProfile> skinCache = CacheBuilder.newBuilder()
++    public static final Cache<String, GameProfile> skinCache = Caffeine.newBuilder() // DreamSpigotPlus - Use Caffeine
+             .maximumSize( 5000 )
+             .expireAfterAccess( 60, TimeUnit.MINUTES )
+             .build( new CacheLoader<String, GameProfile>()
+@@ -126,7 +126,7 @@ public class TileEntitySkull extends TileEntity {
+                     @Override
+                     public void run() {
+ 
+-                        GameProfile profile = skinCache.getUnchecked( name.toLowerCase() );
++                        GameProfile profile = skinCache.getIfPresent( name.toLowerCase() );
+ 
+                         if (profile != null) {
+                             final GameProfile finalProfile = profile;
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 25f39ff..cf12567 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -189,8 +189,9 @@ import com.avaje.ebean.config.DataSourceConfig;
+ import com.avaje.ebean.config.ServerConfig;
+ import com.avaje.ebean.config.dbplatform.SQLitePlatform;
+ import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
++import com.github.benmanes.caffeine.cache.Cache;
++import com.github.benmanes.caffeine.cache.Caffeine;
+ import com.google.common.collect.ImmutableList;
+-import com.google.common.collect.MapMaker;
+ 
+ import jline.console.ConsoleReader;
+ 
+@@ -212,7 +213,7 @@ public final class CraftServer implements Server {
+     private YamlConfiguration configuration;
+     private YamlConfiguration commandsConfiguration;
+     private final Yaml yaml = new Yaml(new SafeConstructor());
+-    private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().softValues().makeMap();
++    private final Cache<UUID, OfflinePlayer> offlinePlayers = Caffeine.newBuilder().softValues().build(); // DreamSpigotPlus - Use Caffeine
+     private final AutoUpdater updater;
+     private final EntityMetadataStore entityMetadata = new EntityMetadataStore();
+     private final PlayerMetadataStore playerMetadata = new PlayerMetadataStore();
+@@ -1413,7 +1414,7 @@ public final class CraftServer implements Server {
+                 result = getOfflinePlayer(profile);
+             }
+         } else {
+-            offlinePlayers.remove(result.getUniqueId());
++            offlinePlayers.invalidate(result.getUniqueId());
+         }
+ 
+         return result;
+@@ -1425,13 +1426,13 @@ public final class CraftServer implements Server {
+ 
+         OfflinePlayer result = getPlayer(id);
+         if (result == null) {
+-            result = offlinePlayers.get(id);
++            result = offlinePlayers.getIfPresent(id);
+             if (result == null) {
+                 result = new CraftOfflinePlayer(this, new GameProfile(id, null));
+                 offlinePlayers.put(id, result);
+             }
+         } else {
+-            offlinePlayers.remove(id);
++            offlinePlayers.invalidate(id);
+         }
+ 
+         return result;
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
+index 9de07c8..4dec744 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
+@@ -64,7 +64,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
+                 public void run()
+                 {
+ 
+-                    final GameProfile profile = net.minecraft.server.TileEntitySkull.skinCache.getUnchecked( CraftMetaSkull.this.profile.getName().toLowerCase() );
++                    final GameProfile profile = net.minecraft.server.TileEntitySkull.skinCache.getIfPresent( CraftMetaSkull.this.profile.getName().toLowerCase() );
+                     if ( profile != null )
+                     {
+                         MinecraftServer.getServer().processQueue.add( new Runnable()
+-- 
+2.7.2.windows.1
+
