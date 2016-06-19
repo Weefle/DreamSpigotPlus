@@ -1,0 +1,22 @@
+From 50280ffbacb5707067b03dc3ca5e79b61a3ee10d Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:12:14 -0300
+Subject: [PATCH] [Migot] Optimize Idle Furnaces
+
+
+diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+index 430fc69..bbd94df 100644
+--- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+@@ -187,7 +187,7 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
+         }
+ 
+         if (!this.world.isStatic) {
+-            if (this.burnTime != 0 || this.items[1] != null && this.items[0] != null) {
++            if (this.burnTime != 0 || this.items[1] != null && this.items[1].getItem() != Items.BUCKET && this.items[0] != null) { // Migot - Add bucket check
+                 // CraftBukkit start - Handle multiple elapsed ticks
+                 if (this.burnTime <= 0 && this.canBurn()) { // CraftBukkit - == to <=
+                     CraftItemStack fuel = CraftItemStack.asCraftMirror(this.items[1]);
+-- 
+2.7.2.windows.1
+
