@@ -1,0 +1,81 @@
+From 30beec7e8c92564bf427485d63326f0a9b7301ba Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 07:54:47 -0300
+Subject: [PATCH] [Paper] Sanitise RegionFileCache and make configurable.
+
+
+diff --git a/src/main/java/net/minecraft/server/RegionFileCache.java b/src/main/java/net/minecraft/server/RegionFileCache.java
+index 025af7a..7b5a659 100644
+--- a/src/main/java/net/minecraft/server/RegionFileCache.java
++++ b/src/main/java/net/minecraft/server/RegionFileCache.java
+@@ -4,13 +4,15 @@ import java.io.DataInputStream;
+ import java.io.DataOutputStream;
+ import java.io.File;
+ import java.io.IOException;
+-import java.util.HashMap;
+ import java.util.Iterator;
+ import java.util.Map;
+ 
++import org.github.paperspigot.PaperSpigotConfig; // Paper
++import java.util.LinkedHashMap; // Paper
++
+ public class RegionFileCache {
+ 
+-    public static final Map a = new HashMap(); // CraftBukkit - private -> public
++	public static final Map<File, RegionFile> a = new LinkedHashMap(PaperSpigotConfig.regionFileCacheSize, 0.75f, true); // Spigot - private -> public, Paper - HashMap -> LinkedHashMap
+     // Paper start
+     public static synchronized RegionFile a(File file1, int i, int j) {
+     	return a(file1, i, j, true);
+@@ -30,8 +32,8 @@ public class RegionFileCache {
+                 file2.mkdirs();
+             }
+ 
+-            if (a.size() >= 256) {
+-                a();
++            if (RegionFileCache.a.size() >= PaperSpigotConfig.regionFileCacheSize) { // Paper
++            	trimCache(); // Paper
+             }
+ 
+             RegionFile regionfile1 = new RegionFile(file3);
+@@ -41,6 +43,22 @@ public class RegionFileCache {
+         }
+     }
+ 
++    // Paper Start
++    private static synchronized void trimCache() {
++        Iterator<Map.Entry<File, RegionFile>> itr = RegionFileCache.a.entrySet().iterator();
++        int count = RegionFileCache.a.size() - PaperSpigotConfig.regionFileCacheSize;
++        while (count-- >= 0 && itr.hasNext()) {
++            try {
++                itr.next().getValue().c();
++            } catch (IOException ioexception) {
++                ioexception.printStackTrace();
++                // ServerInternalException.reportInternalException(ioexception);
++            }
++            itr.remove();
++        }
++    }
++    // Paper End
++    
+     public static synchronized void a() {
+         Iterator iterator = a.values().iterator();
+ 
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+index 061ba88..04ec34b 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+@@ -225,6 +225,11 @@ public class PaperSpigotConfig
+         setHealthBeforeDeathEvent = getBoolean("settings.set-health-before-death-event", false);
+     }
+     
++    public static int regionFileCacheSize = 256;
++    private static void regionFileCacheSize() {
++        regionFileCacheSize = getInt("settings.region-file-cache-size", 256);
++    }
++    
+     public static double strengthEffectModifier;
+     public static double weaknessEffectModifier;
+     private static void effectModifiers()
+-- 
+2.7.2.windows.1
+
