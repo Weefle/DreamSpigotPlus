@@ -1,0 +1,43 @@
+From e30ac99206a606aab2bf13fff274b8dc418a383f Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 07:50:16 -0300
+Subject: [PATCH] [Paper] Prevent Waterflow BlockFromToEvent from loading
+ chunks
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockFlowing.java b/src/main/java/net/minecraft/server/BlockFlowing.java
+index 41bdebd..ed9f488 100644
+--- a/src/main/java/net/minecraft/server/BlockFlowing.java
++++ b/src/main/java/net/minecraft/server/BlockFlowing.java
+@@ -105,6 +105,7 @@ public class BlockFlowing extends BlockFluids {
+         if (world.getType(i, j, k).getMaterial() != material) return; // PaperSpigot - Stop updating flowing block if material has changed
+ 
+         if (this.q(world, i, j - 1, k)) {
++        	if (!canFlowTo(world, source, BlockFace.DOWN)) { return; } // Paper
+             // CraftBukkit start - Send "down" to the server
+             BlockFromToEvent event = new BlockFromToEvent(source, BlockFace.DOWN);
+             if (server != null) {
+@@ -143,6 +144,7 @@ public class BlockFlowing extends BlockFluids {
+ 
+             for (BlockFace currentFace : faces) {
+                 if (aboolean[index]) {
++                	if (!canFlowTo(world, source, currentFace)) { continue; } // Paper
+                     BlockFromToEvent event = new BlockFromToEvent(source, currentFace);
+ 
+                     if (server != null) {
+@@ -159,6 +161,12 @@ public class BlockFlowing extends BlockFluids {
+         }
+     }
+ 
++    // Paper start
++    private boolean canFlowTo(World world, org.bukkit.block.Block source, BlockFace face) {
++        return source.getWorld().isChunkLoaded((source.getX() + face.getModX()) >> 4, (source.getZ() + face.getModZ()) >> 4);
++    }
++    // Paper end
++    
+     private void flow(World world, int i, int j, int k, int l) {
+         if (this.q(world, i, j, k)) {
+             Block block = world.getType(i, j, k);
+-- 
+2.7.2.windows.1
+
