@@ -1,0 +1,22 @@
+From e3a484cbc69c584730bbbf52e5a6a0fd8610b9a5 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:08:34 -0300
+Subject: [PATCH] [CraftBukkit] Ignore movement packets from dead players.
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index afcf94f..ca35abf 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -195,7 +195,7 @@ public class PlayerConnection implements PacketPlayInListener {
+         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
+ 
+         this.g = true;
+-        if (!this.player.viewingCredits) {
++        if (!this.player.viewingCredits && !this.player.dead) { // CraftBukkit - Added ' && !this.player.dead'
+             double d0;
+ 
+             if (!this.checkMovement) {
+-- 
+2.7.2.windows.1
+
