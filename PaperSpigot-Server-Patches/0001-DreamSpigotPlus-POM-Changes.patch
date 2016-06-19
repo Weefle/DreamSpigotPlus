@@ -1,0 +1,161 @@
+From 3e94a78ece31b206a96b09026177c1cc99313fcb Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 15:13:26 -0300
+Subject: [PATCH] [DreamSpigotPlus] POM Changes
+
+
+diff --git a/pom.xml b/pom.xml
+index 34cbf19..022c4e9 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -1,12 +1,12 @@
+ <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+-  <groupId>org.github.paperspigot</groupId>
+-  <artifactId>paperspigot</artifactId>
++  <groupId>com.mrpowergamerbr.dreamspigot</groupId>
++  <artifactId>dreamspigotplus</artifactId>
+   <packaging>jar</packaging>
+   <version>1.7.10-R0.1-SNAPSHOT</version>
+-  <name>PaperSpigot</name>
+-  <url>https://github.com/PaperSpigot/Spigot</url>
++  <name>DreamSpigotPlus-Server</name>
++  <url>https://github.com/CatchyDream/DreamSpigotPlus</url>
+ 
+   <properties>
+     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+@@ -19,8 +19,8 @@
+   </properties>
+ 
+   <parent>
+-    <groupId>org.github.paperspigot</groupId>
+-    <artifactId>paperspigot-parent</artifactId>
++    <groupId>com.mrpowergamerbr.dreamspigot</groupId>
++    <artifactId>dreamspigotplus-parent</artifactId>
+     <version>dev-SNAPSHOT</version>
+     <relativePath>../pom.xml</relativePath>
+   </parent>
+@@ -41,8 +41,8 @@
+ 
+   <dependencies>
+     <dependency>
+-      <groupId>org.github.paperspigot</groupId>
+-      <artifactId>paperspigot-api</artifactId>
++      <groupId>com.mrpowergamerbr.dreamspigot</groupId>
++      <artifactId>dreamspigotplus-api</artifactId>
+       <version>${project.version}</version>
+       <type>jar</type>
+       <scope>compile</scope>
+@@ -122,7 +122,7 @@
+           <execution>
+             <id>ex-paperspigot</id>
+             <configuration>
+-              <format>git-PaperSpigot-%s</format>
++              <format>git-DreamSpigotPlus-%s</format>
+               <scmDirectory>../</scmDirectory>
+               <descriptionProperty>paperspigot.desc</descriptionProperty>
+             </configuration>
+@@ -138,6 +138,7 @@
+         <artifactId>maven-jar-plugin</artifactId>
+         <version>2.1</version>
+         <configuration>
++          <forceCreation>true</forceCreation> <!-- Required to prevent shading the jar multiple times -->
+           <archive>
+             <manifestEntries>
+               <Main-Class>org.bukkit.craftbukkit.Main</Main-Class>
+@@ -176,7 +177,8 @@
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-shade-plugin</artifactId>
+-        <version>2.1</version>
++        <!-- Upgrade Maven Shade Plugin -->
++        <version>2.4.3</version>
+         <executions>
+           <execution>
+             <phase>package</phase>
+@@ -244,8 +246,9 @@
+         <artifactId>maven-compiler-plugin</artifactId>
+         <version>2.3.2</version>
+         <configuration>
+-          <source>1.6</source>
+-          <target>1.6</target>
++          <!-- DreamSpigotPlus - Bump to 1.8, come on, it's 2016 already, stop using Java 7 -->
++          <source>1.8</source>
++          <target>1.8</target>
+         </configuration>
+       </plugin>
+       <plugin>
+@@ -253,6 +256,8 @@
+         <artifactId>maven-surefire-plugin</artifactId>
+         <version>2.11</version>
+         <configuration>
++          <!-- DreamSpigot - Skip Maven Surefire -->
++          <skipTests>true</skipTests>
+           <workingDirectory>${basedir}/target/test-server</workingDirectory>
+             <excludes>
+               <exclude>org/bukkit/craftbukkit/updater/BukkitDLUpdaterServiceTest.java</exclude>
+@@ -286,21 +291,33 @@
+         </executions>
+       </plugin>
+       <plugin>
+-        <groupId>com.wolvereness</groupId>
+-        <artifactId>overmapped</artifactId>
+-        <version>0.0.2</version>
++        <!-- TODO: Stop using external apps, use Maven plugins -->
++        <!-- DreamSpigotPlus - Switch from Overmapped to SpecialSource-2 -->
++        <groupId>org.codehaus.mojo</groupId>
++        <artifactId>exec-maven-plugin</artifactId>
++        <version>1.2.1</version>
+         <executions>
+-          <execution>
+-            <phase>package</phase>
+-            <goals>
+-              <goal>map</goal>
+-            </goals>
+-            <configuration>
+-              <maps>${basedir}/target/maps.yml</maps>
+-              <input>${basedir}/target/${project.artifactId}-${project.version}.jar</input>
+-              <original>${basedir}/target/unmapped-${project.artifactId}-${project.version}.jar</original>
+-            </configuration>
+-          </execution>
++            <execution>
++              <id>SpecialSource-2</id>
++              <phase>install</phase>
++              <goals>
++                <goal>exec</goal>
++              </goals>
++              <configuration>
++                <executable>java</executable>
++                <arguments>
++                   <argument>-jar</argument>
++                   <argument>${project.parent.basedir}/SpecialSource-2.jar</argument>
++                   <argument>map</argument>
++                   <argument>-m</argument>
++                   <argument>${project.parent.basedir}/deprecation-mappings.csrg</argument>
++                   <argument>-i</argument>
++                   <argument>${basedir}/target/${project.artifactId}-${project.version}.jar</argument>
++                   <argument>-o</argument>
++                   <argument>${basedir}/target/${project.artifactId}-${project.version}-mapped.jar</argument>
++                </arguments>
++              </configuration>
++            </execution>
+         </executions>
+       </plugin>
+     </plugins>
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
+index 3a4b142..52fa220 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
+@@ -11,7 +11,7 @@ public final class Versioning {
+     public static String getBukkitVersion() {
+         String result = "Unknown-Version";
+ 
+-        InputStream stream = Bukkit.class.getClassLoader().getResourceAsStream("META-INF/maven/org.github.paperspigot/paperspigot-api/pom.properties");
++        InputStream stream = Bukkit.class.getClassLoader().getResourceAsStream("META-INF/maven/com.mrpowergamerbr.dreamspigot/dreamspigotplus-api/pom.properties");
+         Properties properties = new Properties();
+ 
+         if (stream != null) {
+-- 
+2.7.2.windows.1
+
