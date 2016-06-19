@@ -1,0 +1,52 @@
+From 9dbdc67e481cb343189eb2e2508a2d680d243522 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 22:02:17 -0300
+Subject: [PATCH] [Paper] Set health before death event
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index e64d5a9..2031db8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -84,11 +84,21 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+         	        + (this instanceof CraftPlayer ? ", player: " + ((CraftPlayer) this).getName() + ')' : ')'));
+         }
+ 
++        // Paper start
++        if (org.github.paperspigot.PaperSpigotConfig.setHealthBeforeDeathEvent) {
++            this.getHandle().setHealth((float) health);
++        }
++        // Paper end
++        
+         if (entity instanceof EntityPlayer && health == 0) {
+             ((EntityPlayer) entity).die(DamageSource.GENERIC);
+         }
+ 
+-        getHandle().setHealth((float) health);
++        // Paper start - wrap, see above
++        if (!org.github.paperspigot.PaperSpigotConfig.setHealthBeforeDeathEvent) {
++            getHandle().setHealth((float) health);
++        }
++        // Paper end
+     }
+ 
+     public double getMaxHealth() {
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+index 03be9c1..061ba88 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+@@ -220,6 +220,11 @@ public class PaperSpigotConfig
+         loadPermsBeforePlugins = getBoolean("settings.load-permissions-yml-before-plugins", true);
+     }
+     
++    public static boolean setHealthBeforeDeathEvent = false;
++    private static void healthDeath() {
++        setHealthBeforeDeathEvent = getBoolean("settings.set-health-before-death-event", false);
++    }
++    
+     public static double strengthEffectModifier;
+     public static double weaknessEffectModifier;
+     private static void effectModifiers()
+-- 
+2.7.2.windows.1
+
