@@ -1,0 +1,21 @@
+From 54d164fbf909fadabbe0f408ae09e478b44acaa7 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sat, 18 Jun 2016 20:45:10 -0300
+Subject: [PATCH] [Paper] Always tick falling blocks
+
+
+diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
+index c81c0de..ea6240d 100644
+--- a/src/main/java/org/spigotmc/ActivationRange.java
++++ b/src/main/java/org/spigotmc/ActivationRange.java
+@@ -81,6 +81,7 @@ public class ActivationRange
+                 || entity instanceof EntityFireball
+                 || entity instanceof EntityWeather
+                 || entity instanceof EntityTNTPrimed
++                || entity instanceof EntityFallingBlock // Paper - Always tick falling blocks
+                 || entity instanceof EntityEnderCrystal
+                 || entity instanceof EntityFireworks )
+         {
+-- 
+2.7.2.windows.1
+
