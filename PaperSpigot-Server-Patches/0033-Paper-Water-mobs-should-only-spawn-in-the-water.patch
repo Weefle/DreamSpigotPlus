@@ -1,0 +1,68 @@
+From 58ecbad884a2d15c111407479888b3f8117b1155 Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 08:12:28 -0300
+Subject: [PATCH] [Paper] Water mobs should only spawn in the water
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityWaterAnimal.java b/src/main/java/net/minecraft/server/EntityWaterAnimal.java
+new file mode 100644
+index 0000000..58275cf
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/EntityWaterAnimal.java
+@@ -0,0 +1,53 @@
++package net.minecraft.server;
++
++public abstract class EntityWaterAnimal extends EntityCreature implements IAnimal {
++
++    public EntityWaterAnimal(World world) {
++        super(world);
++    }
++
++    public boolean aE() {
++    	// Paper start - Don't let water mobs spawn in non-water blocks
++    	// Based around EntityAnimal's implementation
++    	int i = MathHelper.floor(this.locX);
++    	int j = MathHelper.floor(this.boundingBox.b); // minY of bounding box
++    	int k = MathHelper.floor(this.locZ);
++    	Block block = this.world.getType(i, j, k);
++    	
++    	return block == Blocks.WATER || block == Blocks.STATIONARY_WATER;
++    	// Paper end
++    }
++
++    public boolean canSpawn() {
++        return this.world.b(this.boundingBox);
++    }
++
++    public int q() {
++        return 120;
++    }
++
++    protected boolean isTypeNotPersistent() {
++        return true;
++    }
++
++    protected int getExpValue(EntityHuman entityhuman) {
++        return 1 + this.world.random.nextInt(3);
++    }
++
++    public void C() {
++        int i = this.getAirTicks();
++
++        super.C();
++        if (this.isAlive() && !this.M()) {
++            --i;
++            this.setAirTicks(i);
++            if (this.getAirTicks() == -20) {
++                this.setAirTicks(0);
++                this.damageEntity(DamageSource.DROWN, 2.0F);
++            }
++        } else {
++            this.setAirTicks(300);
++        }
++
++    }
++}
+-- 
+2.7.2.windows.1
+
