@@ -1,0 +1,34 @@
+From 990b5a91503f11140fd51af1a8f8010de72a6d9f Mon Sep 17 00:00:00 2001
+From: MrPowerGamerBR <leonardomalaman@gmail.com>
+Date: Sun, 19 Jun 2016 11:06:54 -0300
+Subject: [PATCH] [Paper] Remove completely invalid Redstone event for
+ Netherrack
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockBloodStone.java b/src/main/java/net/minecraft/server/BlockBloodStone.java
+index ca46ea6..7d067a7 100644
+--- a/src/main/java/net/minecraft/server/BlockBloodStone.java
++++ b/src/main/java/net/minecraft/server/BlockBloodStone.java
+@@ -13,15 +13,15 @@ public class BlockBloodStone extends Block {
+         return MaterialMapColor.K;
+     }
+ 
+-    // CraftBukkit start
+-    public void doPhysics(World world, int i, int j, int k, int l) {
+-        if (net.minecraft.server.Block.getById(l) != null && net.minecraft.server.Block.getById(l).isPowerSource()) {
++    // PaperSpigot - Remove completely invalid Redstone event for Netherrack
++    public void doPhysics_nvmplsdont(World world, int i, int j, int k, int l) {
++        /* if (net.minecraft.server.Block.getById(l) != null && net.minecraft.server.Block.getById(l).isPowerSource()) {
+             org.bukkit.block.Block block = world.getWorld().getBlockAt(i, j, k);
+             int power = block.getBlockPower();
+ 
+             BlockRedstoneEvent event = new BlockRedstoneEvent(block, power, power);
+             world.getServer().getPluginManager().callEvent(event);
+-        }
++        } */
+     }
+     // CraftBukkit end
+ }
+-- 
+2.7.2.windows.1
+
